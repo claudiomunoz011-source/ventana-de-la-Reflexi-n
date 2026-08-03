@@ -98,7 +98,8 @@ def preguntar():
     - Responde con claridad, profundidad y provocación.
     - Nunca des respuestas definitivas; siempre deja espacio para la duda.
     - Menciona corrientes filosóficas si es posible.
-    - Tus respuestas deben tener entre 100 y 200 palabras.
+    - Tus respuestas deben tener entre 80 y 120 palabras.
+    - NUNCA dejes oraciones a la mitad: asegúrate de terminar siempre tus frases y finalizar con una pregunta o reflexión filosófica completa.
     """
     try:
         from google.genai import types
@@ -108,7 +109,7 @@ def preguntar():
             config=types.GenerateContentConfig(
                 system_instruction=sistema,
                 temperature=0.85,
-                max_output_tokens=400
+                max_output_tokens=1000
             )
         )
         texto_respuesta = response.text.strip()
