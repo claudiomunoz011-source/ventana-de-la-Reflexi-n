@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Bóveda de la Duda</title>
+    <style>
+        /* --- Estilos Filosóficos (Sepia y Gris) --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Times New Roman', Garamond, serif;
+            background-color: #2b2b2b;
+            color: #e0d6c8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .vault-container {
+            max-width: 900px;
+            width: 100%;
+            background: #3a3530;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            border: 1px solid #5a5048;
+            position: relative;
+            min-height: 600px;
+        }
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #5a5048;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+            color: #d4b896;
+            font-weight: normal;
+        }
+        .step-indicator {
+            background: #4a423b;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            color: #c4b5a2;
+        }
+        /* Salas (se muestran según step) */
+        .room {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .room.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Preguntas y textos */
+        .question-box {
+            background: #2f2924;
+            padding: 20px;
+            border-left: 6px solid #b89a7a;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #f0e3d4;
+        }
+        label {
+            display: block;
+            margin: 20px 0 8px 0;
+            font-weight: bold;
+            color: #d4b896;
+            letter-spacing: 1px;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            background: #1f1b18;
+            border: 1px solid #5a4c40;
+            border-radius: 8px;
+            color: #f0e3d4;
+            font-family: 'Times New Roman', serif;
+            font-size: 1rem;
+            resize: vertical;
+        }
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #b89a7a;
+            box-shadow: 0 0 10px rgba(184, 154, 122, 0.3);
+        }
+        /* Botones */
+        .btn {
+            background: #5a4c40;
+            border: none;
+            color: #f0e3d4;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            font-family: 'Times New Roman', serif;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+        }
+        .btn:hover:not(:disabled) {
+            background: #b89a7a;
+            color: #1f1b18;
+            transform: scale(1.02);
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-primary {
+            background: #8b6f54;
+            color: #1f1b18;
+            font-weight: bold;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #c4a68a;
+        }
+        /* Timer (Sala 3) */
+        .timer-display {
+            font-size: 4rem;
+            text-align: center;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            color: #d4b896;
+            letter-spacing: 8px;
+        }
+        .mini-game {
+            background: #2f2924;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .mini-game img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 1px solid #5a4c40;
+        }
+        /* Sala 5: Espejo */
+        .split-panel {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .panel-ia {
+            flex: 1;
+            background: #1c2833;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #2e86c1;
+            color: #aed6f1;
+        }
+        .panel-humano {
+            flex: 1;
+            background: #2c1f18;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #d4ac0d;
+            color: #f5e6d3;
+        }
+        .highlight-green { background-color: #1e5631; padding: 2px 4px; border-radius: 3px; }
+        .highlight-red { background-color: #78281f; padding: 2px 4px; border-radius: 3px; }
+        .highlight-yellow { background-color: #7d6608; padding: 2px 4px; border-radius: 3px; }
+        
+        .insignia-box {
+            background: #1f1b18;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 1px dashed #b89a7a;
+        }
+        .insignia-box span {
+            display: block;
+            padding: 5px 0;
+            color: #f1c40f;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .vault-container { padding: 15px; }
+            .split-panel { flex-direction: column; }
+            .header h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="vault-container">
+    <div class="header">
+        <h1>⚜️ Bóveda de la Duda</h1>
+        <span class="step-indicator" id="stepIndicator">Sala 1 / 5</span>
+    </div>
+
+    <!-- ============ SALA 1: EL ENIGMA ============ -->
+    <div id="room1" class="room active">
+        <h2>📜 El Enigma</h2>
+        <div class="question-box" id="questionDisplay">Cargando pregunta...</div>
+        <label for="opinionInput">Tu opinión intuitiva (aunque sea "no sé"):</label>
+        <textarea id="opinionInput" rows="3" placeholder="Escribe tu primera impresión..."></textarea>
+        <button class="btn btn-primary" id="btnStart" onclick="startActivity()">Guardar y Avanzar ➤</button>
+    </div>
+
+    <!-- ============ SALA 2: EL INTERROGATORIO ============ -->
+    <div id="room2" class="room">
+        <h2>🧠 El Interrogatorio (3 preguntas máximas)</h2>
+        <p style="color: #b89a7a; margin-bottom: 10px;">Profundidad Socrática: <span id="depthMeter">0%</span></p>
+        <div style="background:#2f2924; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto; margin:10px 0;" id="chatHistory">
+            <p style="color:#8b7a6a;"><i>El Oráculo espera tu primera pregunta...</i></p>
+        </div>
+        <label for="promptInput">Tu pregunta al Oráculo:</label>
+        <textarea id="promptInput" rows="2" placeholder="Escribe tu pregunta (mín. 10 caracteres)..."></textarea>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn" id="btnAsk" onclick="askOracle()">Consultar Oráculo</button>
+            <span style="margin-top:15px; color:#8b7a6a;">Preguntas restantes: <span id="remainingPrompts">3</span></span>
+        </div>
+        <button class="btn btn-primary" id="btnToPause" style="display:none;" onclick="goToPause()">Ir a la Pausa ➤</button>
+    </div>
+
+    <!-- ============ SALA 3: EL ÉXODO DIGITAL (PAUSA) ============ -->
+    <div id="room3" class="room">
+        <h2>⏳ Éxodo Digital</h2>
+        <p style="color:#d4b896;">La IA ha sido encerrada. Debes esperar antes de escribir.</p>
+        <div class="timer-display" id="timerDisplay">01:00</div>
+        <div class="mini-game">
+            <p><i>Mientras la arena cae, contempla esta obra:</i></p>
+            <img id="artImage" src="https://picsum.photos/400/200?random=1" alt="Arte aleatorio">
+            <p style="margin-top:10px; font-size:0.9rem; color:#8b7a6a;">Escribe una palabra que asocies con esta imagen (opcional).</p>
+            <input type="text" id="artWord" placeholder="Ej: melancolía, caos, quietud..." style="width:70%; display:inline-block;">
+        </div>
+        <button class="btn btn-primary" id="btnEndPause" disabled onclick="endPause()">La arena se ha vaciado. Avanzar ➤</button>
+    </div>
+
+    <!-- ============ SALA 4: EL FUELLE DEL HERRERO ============ -->
+    <div id="room4" class="room">
+        <h2>✍️ El Fuelle del Herrero</h2>
+        <p style="color:#d4b896;"><i>Ahora escribe sin mirar las respuestas de la IA. Usa tus propias palabras.</i></p>
+        <label for="reflectionInput">Tu reflexión final (mín. 20 palabras):</label>
+        <textarea id="reflectionInput" rows="6" placeholder="Escribe aquí tu pensamiento decantado..." onpaste="return false;"></textarea>
+        <button class="btn btn-primary" id="btnReflect" onclick="submitReflection()">Guardar Reflexión y Ver Espejo ➤</button>
+    </div>
+
+    <!-- ============ SALA 5: EL ESPEJO ============ -->
+    <div id="room5" class="room">
+        <h2>🪞 El Espejo (Contraste)</h2>
+        <div id="resultContainer">
+            <p style="color:#8b7a6a;">Cargando tu evaluación...</p>
+        </div>
+        <div id="metacognitionBox" style="margin-top:20px;">
+            <label>1. ¿Qué prompt te costó más formular y por qué?</label>
+            <textarea id="meta1" rows="2" placeholder="..." style="margin-bottom:15px;"></textarea>
+            <label>2. ¿Qué idea tuya no apareció en la IA y de dónde crees que la sacaste?</label>
+            <textarea id="meta2" rows="2" placeholder="..." style="margin-bottom:15px;"></textarea>
+            <label>3. Si pudieras hacer una cuarta pregunta ahora a la IA, ¿cuál sería?</label>
+            <textarea id="meta3" rows="2" placeholder="..." style="margin-bottom:15px;"></textarea>
+            <button class="btn btn-primary" onclick="finalizarActividad()">Entregar y Finalizar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== ESTADO GLOBAL ====================
+    let currentStep = 1;
+    const QUESTIONS = [
+        "¿Es el tiempo una ilusión de la conciencia o una propiedad real del universo?",
+        "¿El libre albedrío existe realmente o es una ilusión determinada por leyes físicas?",
+        "¿Puede una máquina llegar a tener conciencia o es la subjetividad un privilegio biológico?",
+        "Si el bien y el mal son constructos humanos, ¿existe una moral objetiva?",
+        "¿Es el lenguaje una herramienta para describir la realidad, o la realidad está construida por el lenguaje?"
+    ];
+    let selectedQuestionIdx = 0;
+    let promptCount = 0;
+    let timerInterval = null;
+    let pauseEnded = false;
+
+    // Bloqueo de salida (Regla complementaria)
+    window.addEventListener('beforeunload', (event) => {
+        // Si no ha finalizado y está en medio de una sala importante
+        if (currentStep >= 2 && currentStep <= 4) {
+            event.preventDefault();
+            event.returnValue = 'Aún no has terminado tu reflexión en la Bóveda. ¿Seguro que quieres salir?';
+        }
+    });
+
+    // ==================== NAVEGACIÓN ====================
+    function showRoom(roomId) {
+        document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+        document.getElementById(roomId).classList.add('active');
+        document.getElementById('stepIndicator').innerText = `Sala ${currentStep} / 5`;
+    }
+
+    // ==================== SALA 1 ====================
+    window.onload = function() {
+        // Seleccionar pregunta aleatoria
+        selectedQuestionIdx = Math.floor(Math.random() * QUESTIONS.length);
+        document.getElementById('questionDisplay').innerText = QUESTIONS[selectedQuestionIdx];
+        // Cargar imagen aleatoria para la Sala 3
+        document.getElementById('artImage').src = `https://picsum.photos/400/200?random=${Math.random()}`;
+    }
+
+    function startActivity() {
+        const opinion = document.getElementById('opinionInput').value.trim();
+        if (opinion.length < 1) {
+            alert('Por favor, escribe al menos una palabra de opinión inicial.');
+            return;
+        }
+
+        fetch('/api/iniciar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pregunta_idx: selectedQuestionIdx, opinion_inicial: opinion })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                currentStep = 2;
+                showRoom('room2');
+                // Resetear contadores de la sala 2
+                promptCount = 0;
+                document.getElementById('remainingPrompts').innerText = 3;
+                document.getElementById('chatHistory').innerHTML = `<p style="color:#8b7a6a;"><i>El Oráculo espera tu primera pregunta...</i></p>`;
+                document.getElementById('btnToPause').style.display = 'none';
+                document.getElementById('btnAsk').disabled = false;
+            }
+        });
+    }
+
+    // ==================== SALA 2 ====================
+    function askOracle() {
+        const promptText = document.getElementById('promptInput').value.trim();
+        if (promptText.length < 10) {
+            alert('Tu pregunta debe tener al menos 10 caracteres. Profundiza un poco más.');
+            return;
+        }
+
+        if (promptCount >= 3) {
+            alert('Ya realizaste tus 3 preguntas.');
+            return;
+        }
+
+        document.getElementById('btnAsk').disabled = true;
+        document.getElementById('btnAsk').innerText = 'Consultando...';
+
+        fetch('/api/preguntar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: promptText })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                document.getElementById('btnAsk').disabled = false;
+                document.getElementById('btnAsk').innerText = 'Consultar Oráculo';
+                return;
+            }
+
+            // Actualizar chat
+            const chat = document.getElementById('chatHistory');
+            const humanMsg = `<p style="color:#d4ac0d; margin-top:10px;"><strong>Tú:</strong> ${promptText}</p>`;
+            const iaMsg = `<p style="color:#aed6f1;"><strong>Oráculo:</strong> ${data.respuesta}</p>`;
+            chat.innerHTML += humanMsg + iaMsg;
+            chat.scrollTop = chat.scrollHeight;
+
+            // Actualizar contadores y profundidad
+            promptCount = data.prompt_numero;
+            document.getElementById('remainingPrompts').innerText = 3 - promptCount;
+            document.getElementById('depthMeter').innerText = `${data.profundidad}%`;
+
+            // Limpiar input
+            document.getElementById('promptInput').value = '';
+
+            document.getElementById('btnAsk').disabled = false;
+            document.getElementById('btnAsk').innerText = 'Consultar Oráculo';
+
+            if (promptCount >= 3) {
+                document.getElementById('btnAsk').disabled = true;
+                document.getElementById('btnToPause').style.display = 'inline-block';
+                // Guardar las respuestas de la IA en una variable global para usarlas luego
+            }
+        })
+        .catch(err => {
+            alert('Error al conectar con el servidor.');
+            document.getElementById('btnAsk').disabled = false;
+            document.getElementById('btnAsk').innerText = 'Consultar Oráculo';
+        });
+    }
+
+    // ==================== SALA 3 ====================
+    function goToPause() {
+        currentStep = 3;
+        showRoom('room3');
+        pauseEnded = false;
+        document.getElementById('btnEndPause').disabled = true;
+
+        fetch('/api/iniciar_pausa', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            startTimer(data.duracion);
+        });
+    }
+
+    function startTimer(duration) {
+        let timeLeft = duration;
+        const display = document.getElementById('timerDisplay');
+        timerInterval = setInterval(() => {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            display.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            timeLeft--;
+
+            if (timeLeft < 0) {
+                clearInterval(timerInterval);
+                display.innerText = '00:00';
+                document.getElementById('btnEndPause').disabled = false;
+                pauseEnded = true;
+            }
+        }, 1000);
+    }
+
+    function endPause() {
+        if (!pauseEnded) {
+            alert('Debes esperar a que la arena termine de caer.');
+            return;
+        }
+        clearInterval(timerInterval);
+        currentStep = 4;
+        showRoom('room4');
+    }
+
+    // ==================== SALA 4 ====================
+    function submitReflection() {
+        const texto = document.getElementById('reflectionInput').value.trim();
+        if (texto.length < 20) {
+            alert('Escribe una reflexión más desarrollada (mínimo 20 palabras).');
+            return;
+        }
+
+        fetch('/api/guardar_reflexion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto: texto })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            currentStep = 5;
+            showRoom('room5');
+            loadContraste();
+        });
+    }
+
+    // ==================== SALA 5 ====================
+    function loadContraste() {
+        fetch('/api/evaluar_contraste')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('resultContainer');
+            let html = `
+                <div class="split-panel">
+                    <div class="panel-ia">
+                        <h3 style="color:#2e86c1;">🤖 Oráculo (IA)</h3>
+                        <p style="font-size:0.9rem; color:#aed6f1;"><i>${data.texto_ia_completo.substring(0, 500)}...</i></p>
+                        <hr style="border-color:#2e86c1;">
+                        <p><strong>Riesgo de dependencia:</strong> ${data.riesgo_dependencia}%</p>
+                    </div>
+                    <div class="panel-humano">
+                        <h3 style="color:#d4ac0d;">🧑‍🎓 Humano (Tú)</h3>
+                        <p style="font-size:0.9rem;">${data.reflexion_humana}</p>
+                        <hr style="border-color:#d4ac0d;">
+                        <p><strong>Palabras propias (amarillo):</strong> ${data.solo_humano.join(', ') || 'Ninguna detectada'}</p>
+                    </div>
+                </div>
+                <div style="margin-top:15px; background:#1f1b18; padding:10px; border-radius:8px;">
+                    <p><strong>🟢 Coincidencias (verde):</strong> ${data.coincidencias.join(', ') || 'Pocas coincidencias literales'}</p>
+                    <p><strong>🔴 Solo IA (rojo):</strong> ${data.solo_ia.join(', ') || 'Ninguna'}</p>
+                </div>
+                <div class="insignia-box">
+                    <strong>🏅 Insignias obtenidas:</strong>
+                    ${data.insignias.map(i => `<span>${i}</span>`).join('')}
+                </div>
+            `;
+            container.innerHTML = html;
+
+            // Guardar datos de metacognición para el envío final
+            window._metaData = data;
+        });
+    }
+
+    function finalizarActividad() {
+        const meta1 = document.getElementById('meta1').value.trim();
+        const meta2 = document.getElementById('meta2').value.trim();
+        const meta3 = document.getElementById('meta3').value.trim();
+
+        if (!meta1 || !meta2 || !meta3) {
+            alert('Por favor, responde las 3 preguntas metacognitivas para completar la actividad.');
+            return;
+        }
+
+        // Enviar finalización (aquí podrías guardar todo en BD)
+        fetch('/api/finalizar', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            alert('✅ ¡Actividad completada! Has atravesado todas las salas de la Bóveda de la Duda.');
+            // Desbloquear la salida de la página
+            window.removeEventListener('beforeunload', () => {});
+            // Mostrar resumen final
+            document.getElementById('metacognitionBox').innerHTML = `
+                <div style="background:#2f2924; padding:20px; border-radius:10px; text-align:center;">
+                    <h2 style="color:#d4b896;">🎉 Viaje completado</h2>
+                    <p>Tu maestro recibirá tu bitácora de proceso y producto.</p>
+                    <p style="font-size:0.8rem; color:#8b7a6a;">Puedes cerrar esta ventana con seguridad.</p>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
