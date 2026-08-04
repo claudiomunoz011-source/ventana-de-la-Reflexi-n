@@ -65,12 +65,46 @@ def distancia_coseno(emb1, emb2):
 def index():
     return render_template('index.html')
 
+@app.route('/api/generar_pregunta', methods=['POST', 'GET'])
+def generar_pregunta():
+    if not client:
+        return jsonify({'error': 'La clave GEMINI_API_KEY no está configurada.'}), 500
+    try:
+        from google.genai import types
+        sistema_preguntas = """
+        Eres un filósofo educador especializado en formular dilemas éticos y preguntas filosóficas profundas.
+        - Genera UNA SOLA pregunta o dilema ético/filosófico provocador en español.
+        - Debe ser clara, intrigante y apta para debate escolar/universitario.
+        - No agregues introducciones, numeración ni saludos. Entrega únicamente el texto de la pregunta.
+        - Longitud máxima: 20 a 35 palabras.
+        """
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents="Genera un dilema o pregunta filosófica/ética profunda e inspiradora.",
+            config=types.GenerateContentConfig(
+                system_instruction=sistema_preguntas,
+                temperature=0.95,
+                max_output_tokens=150
+            )
+        )
+        pregunta_generada = response.text.strip()
+        return jsonify({'status': 'ok', 'pregunta': pregunta_generada})
+    except Exception as e:
+        return jsonify({'error': f'Error al generar pregunta con Gemini: {str(e)}'}), 500
+
 @app.route('/api/iniciar', methods=['POST'])
 def iniciar():
     data = request.json or {}
+    pregunta_custom = data.get('pregunta', '').strip()
     pregunta_idx = data.get('pregunta_idx', 0)
+    
+    if pregunta_custom:
+        pregunta_final = pregunta_custom
+    else:
+        pregunta_final = QUESTIONS[pregunta_idx % len(QUESTIONS)]
+
     session.clear()
-    session['pregunta'] = QUESTIONS[pregunta_idx % len(QUESTIONS)]
+    session['pregunta'] = pregunta_final
     session['opinion_inicial'] = data.get('opinion_inicial', '')
     session['prompts'] = []
     session['respuestas_ia'] = []
@@ -214,3 +248,4 @@ def finalizar():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
