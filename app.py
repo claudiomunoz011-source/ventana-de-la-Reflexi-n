@@ -143,7 +143,7 @@ def preguntar():
             config=types.GenerateContentConfig(
                 system_instruction=sistema,
                 temperature=0.85,
-                max_output_tokens=1000
+                max_output_tokens=2000
             )
         )
         texto_respuesta = response.text.strip()
