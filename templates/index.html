@@ -214,9 +214,23 @@
     <!-- ============ SALA 1: EL ENIGMA ============ -->
     <div id="room1" class="room active">
         <h2>📜 El Enigma</h2>
-        <div class="question-box" id="questionDisplay">Cargando pregunta...</div>
-        <label for="opinionInput">Tu opinión intuitiva (aunque sea "no sé"):</label>
-        <textarea id="opinionInput" rows="3" placeholder="Escribe tu primera impresión..."></textarea>
+        <p style="color: #c4b5a2; margin-bottom: 15px; font-size: 0.95rem;">
+            Define la pregunta o dilema ético sobre la que reflexionarás hoy (puedes elegir una del profesor, generar una con IA o seleccionar del catálogo):
+        </p>
+
+        <!-- Controles para origen de la pregunta -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; align-items: center;">
+            <button class="btn" style="padding: 8px 16px; font-size: 0.9rem; margin-top: 0;" onclick="generateAiQuestion()" id="btnGenerateAi">🎲 Generar dilema con IA</button>
+            <select id="presetQuestionSelect" style="padding: 10px; background: #1f1b18; color: #f0e3d4; border: 1px solid #5a4c40; border-radius: 8px; font-family: inherit; font-size: 0.9rem; flex: 1; min-width: 200px;" onchange="selectPresetQuestion(this.value)">
+                <option value="">-- O seleccionar del catálogo predeterminado --</option>
+            </select>
+        </div>
+
+        <label for="questionInput">Pregunta de reflexión (puedes redactar la del profesor o editar la generada):</label>
+        <textarea id="questionInput" rows="3" placeholder="Escribe la pregunta asignada por el profesor o genera una nueva..."></textarea>
+
+        <label for="opinionInput">Tu opinión intuitiva inicial (aunque sea "no sé"):</label>
+        <textarea id="opinionInput" rows="3" placeholder="Escribe tu primera impresión o postura..."></textarea>
         <button class="btn btn-primary" id="btnStart" onclick="startActivity()">Guardar y Avanzar ➤</button>
     </div>
 
@@ -310,15 +324,60 @@
 
     // ==================== SALA 1 ====================
     window.onload = function() {
-        // Seleccionar pregunta aleatoria
-        selectedQuestionIdx = Math.floor(Math.random() * QUESTIONS.length);
-        document.getElementById('questionDisplay').innerText = QUESTIONS[selectedQuestionIdx];
+        // Poblar catálogo de preguntas
+        const select = document.getElementById('presetQuestionSelect');
+        if (select) {
+            QUESTIONS.forEach((q, idx) => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.innerText = `${idx + 1}. ${q.substring(0, 55)}...`;
+                select.appendChild(opt);
+            });
+        }
+        // Cargar primera pregunta por defecto
+        document.getElementById('questionInput').value = QUESTIONS[0];
         // Cargar imagen aleatoria para la Sala 3
         document.getElementById('artImage').src = `https://picsum.photos/400/200?random=${Math.random()}`;
     }
 
+    function generateAiQuestion() {
+        const btn = document.getElementById('btnGenerateAi');
+        const input = document.getElementById('questionInput');
+        btn.disabled = true;
+        btn.innerText = '✨ Generando con Gemini...';
+
+        fetch('/api/generar_pregunta', { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerText = '🎲 Generar dilema con IA';
+            if (data.pregunta) {
+                input.value = data.pregunta;
+            } else if (data.error) {
+                alert(data.error);
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerText = '🎲 Generar dilema con IA';
+            alert('Error al conectar con la IA para generar la pregunta.');
+        });
+    }
+
+    function selectPresetQuestion(val) {
+        if (val) {
+            document.getElementById('questionInput').value = val;
+        }
+    }
+
     function startActivity() {
+        const questionText = document.getElementById('questionInput').value.trim();
         const opinion = document.getElementById('opinionInput').value.trim();
+
+        if (questionText.length < 5) {
+            alert('La pregunta de reflexión debe tener al menos 5 caracteres.');
+            return;
+        }
         if (opinion.length < 1) {
             alert('Por favor, escribe al menos una palabra de opinión inicial.');
             return;
@@ -327,7 +386,7 @@
         fetch('/api/iniciar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pregunta_idx: selectedQuestionIdx, opinion_inicial: opinion })
+            body: JSON.stringify({ pregunta: questionText, opinion_inicial: opinion })
         })
         .then(res => res.json())
         .then(data => {
@@ -337,7 +396,7 @@
                 // Resetear contadores de la sala 2
                 promptCount = 0;
                 document.getElementById('remainingPrompts').innerText = 3;
-                document.getElementById('chatHistory').innerHTML = `<p style="color:#8b7a6a;"><i>El Oráculo espera tu primera pregunta...</i></p>`;
+                document.getElementById('chatHistory').innerHTML = `<p style="color:#8b7a6a;"><i>El Oráculo espera tu primera pregunta sobre la premisa: "${data.pregunta}"...</i></p>`;
                 document.getElementById('btnToPause').style.display = 'none';
                 document.getElementById('btnAsk').disabled = false;
             }
