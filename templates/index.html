@@ -1,641 +1,351 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>La Bóveda de la Duda</title>
-    <style>
-        /* --- Estilos Filosóficos (Sepia y Gris) --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Times New Roman', Garamond, serif;
-            background-color: #2b2b2b;
-            color: #e0d6c8;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .vault-container {
-            max-width: 900px;
-            width: 100%;
-            background: #3a3530;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-            border: 1px solid #5a5048;
-            position: relative;
-            min-height: 600px;
-        }
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #5a5048;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-        .header h1 {
-            font-size: 1.8rem;
-            letter-spacing: 4px;
-            color: #d4b896;
-            font-weight: normal;
-        }
-        .step-indicator {
-            background: #4a423b;
-            padding: 8px 16px;
-            border-radius: 30px;
-            font-size: 0.9rem;
-            color: #c4b5a2;
-        }
-        /* Salas (se muestran según step) */
-        .room {
-            display: none;
-            animation: fadeIn 0.5s ease;
-        }
-        .room.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Preguntas y textos */
-        .question-box {
-            background: #2f2924;
-            padding: 20px;
-            border-left: 6px solid #b89a7a;
-            border-radius: 8px;
-            margin: 20px 0;
-            font-size: 1.2rem;
-            font-style: italic;
-            color: #f0e3d4;
-        }
-        label {
-            display: block;
-            margin: 20px 0 8px 0;
-            font-weight: bold;
-            color: #d4b896;
-            letter-spacing: 1px;
-        }
-        textarea, input[type="text"] {
-            width: 100%;
-            padding: 15px;
-            background: #1f1b18;
-            border: 1px solid #5a4c40;
-            border-radius: 8px;
-            color: #f0e3d4;
-            font-family: 'Times New Roman', serif;
-            font-size: 1rem;
-            resize: vertical;
-        }
-        textarea:focus, input:focus {
-            outline: none;
-            border-color: #b89a7a;
-            box-shadow: 0 0 10px rgba(184, 154, 122, 0.3);
-        }
-        /* Botones */
-        .btn {
-            background: #5a4c40;
-            border: none;
-            color: #f0e3d4;
-            padding: 12px 30px;
-            border-radius: 40px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            font-family: 'Times New Roman', serif;
-            letter-spacing: 1px;
-            border: 1px solid transparent;
-        }
-        .btn:hover:not(:disabled) {
-            background: #b89a7a;
-            color: #1f1b18;
-            transform: scale(1.02);
-        }
-        .btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none;
-        }
-        .btn-primary {
-            background: #8b6f54;
-            color: #1f1b18;
-            font-weight: bold;
-        }
-        .btn-primary:hover:not(:disabled) {
-            background: #c4a68a;
-        }
-        /* Timer (Sala 3) */
-        .timer-display {
-            font-size: 4rem;
-            text-align: center;
-            margin: 30px 0;
-            font-family: 'Courier New', monospace;
-            color: #d4b896;
-            letter-spacing: 8px;
-        }
-        .mini-game {
-            background: #2f2924;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .mini-game img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            border: 1px solid #5a4c40;
-        }
-        /* Sala 5: Espejo */
-        .split-panel {
-            display: flex;
-            gap: 20px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-        .panel-ia {
-            flex: 1;
-            background: #1c2833;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #2e86c1;
-            color: #aed6f1;
-        }
-        .panel-humano {
-            flex: 1;
-            background: #2c1f18;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #d4ac0d;
-            color: #f5e6d3;
-        }
-        .highlight-green { background-color: #1e5631; padding: 2px 4px; border-radius: 3px; }
-        .highlight-red { background-color: #78281f; padding: 2px 4px; border-radius: 3px; }
-        .highlight-yellow { background-color: #7d6608; padding: 2px 4px; border-radius: 3px; }
-        
-        .insignia-box {
-            background: #1f1b18;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 1px dashed #b89a7a;
-        }
-        .insignia-box span {
-            display: block;
-            padding: 5px 0;
-            color: #f1c40f;
-        }
+import os
+import time
+import json
+import math
+from flask import Flask, request, jsonify, session, render_template
+from dotenv import load_dotenv
+import numpy as np
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            .vault-container { padding: 15px; }
-            .split-panel { flex-direction: column; }
-            .header h1 { font-size: 1.2rem; }
-        }
-    </style>
-</head>
-<body>
+load_dotenv()
 
-<div class="vault-container">
-    <div class="header">
-        <h1>⚜️ Bóveda de la Duda</h1>
-        <span class="step-indicator" id="stepIndicator">Sala 1 / 5</span>
-    </div>
+app = Flask(__name__)
+app.secret_key = os.getenv("FLASK_SECRET_KEY") or os.urandom(24)
 
-    <!-- ============ SALA 1: EL ENIGMA ============ -->
-    <div id="room1" class="room active">
-        <h2>📜 El Enigma</h2>
-        <p style="color: #c4b5a2; margin-bottom: 15px; font-size: 0.95rem;">
-            Define la pregunta o dilema ético sobre la que reflexionarás hoy (puedes elegir una del profesor, generar una con IA o seleccionar del catálogo):
-        </p>
+# Configuración de Google GenAI (Gemini)
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
 
-        <!-- Controles para origen de la pregunta -->
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; align-items: center;">
-            <button class="btn" style="padding: 8px 16px; font-size: 0.9rem; margin-top: 0;" onclick="generateAiQuestion()" id="btnGenerateAi">🎲 Generar dilema con IA</button>
-            <select id="presetQuestionSelect" style="padding: 10px; background: #1f1b18; color: #f0e3d4; border: 1px solid #5a4c40; border-radius: 8px; font-family: inherit; font-size: 0.9rem; flex: 1; min-width: 200px;" onchange="selectPresetQuestion(this.value)">
-                <option value="">-- O seleccionar del catálogo predeterminado --</option>
-            </select>
-        </div>
+client = None
+if GEMINI_API_KEY:
+    try:
+        from google import genai
+        client = genai.Client(api_key=GEMINI_API_KEY)
+    except Exception as e:
+        print(f"Advertencia: No se pudo inicializar el cliente de Google GenAI: {e}")
 
-        <label for="studentNameInput">Tu Nombre o Seudónimo (para la bitácora de entrega):</label>
-        <input type="text" id="studentNameInput" placeholder="Ej: María González (opcional)" style="margin-bottom: 10px;">
+PAUSE_SECONDS = 60
+MAX_PROMPTS = 3
 
-        <label for="questionInput">Pregunta de reflexión (puedes redactar la del profesor o editar la generada):</label>
-        <textarea id="questionInput" rows="3" placeholder="Escribe la pregunta asignada por el profesor o genera una nueva..."></textarea>
-
-        <label for="opinionInput">Tu opinión intuitiva inicial (aunque sea "no sé"):</label>
-        <textarea id="opinionInput" rows="3" placeholder="Escribe tu primera impresión o postura..."></textarea>
-        <button class="btn btn-primary" id="btnStart" onclick="startActivity()">Guardar y Avanzar ➤</button>
-    </div>
-
-    <!-- ============ SALA 2: EL INTERROGATORIO ============ -->
-    <div id="room2" class="room">
-        <h2>🧠 El Interrogatorio (3 preguntas máximas)</h2>
-        <div style="background:#2f2924; padding:15px; border-radius:10px; max-height:300px; overflow-y:auto; margin:10px 0;" id="chatHistory">
-            <p style="color:#8b7a6a;"><i>El Oráculo espera tu primera pregunta...</i></p>
-        </div>
-        <label for="promptInput">Tu pregunta al Oráculo:</label>
-        <textarea id="promptInput" rows="2" placeholder="Escribe tu pregunta (mín. 10 caracteres)..."></textarea>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn" id="btnAsk" onclick="askOracle()">Consultar Oráculo</button>
-            <span style="margin-top:15px; color:#8b7a6a;">Preguntas restantes: <span id="remainingPrompts">3</span></span>
-        </div>
-        <button class="btn btn-primary" id="btnToPause" style="display:none;" onclick="goToPause()">Ir a la Pausa ➤</button>
-    </div>
-
-    <!-- ============ SALA 3: EL ÉXODO DIGITAL (PAUSA) ============ -->
-    <div id="room3" class="room">
-        <h2>⏳ Éxodo Digital</h2>
-        <p style="color:#d4b896;">La IA ha sido encerrada. Debes esperar antes de escribir.</p>
-        <div class="timer-display" id="timerDisplay">01:00</div>
-        <div class="mini-game">
-            <p><i>Mientras la arena cae, contempla esta obra:</i></p>
-            <img id="artImage" src="https://picsum.photos/400/200?random=1" alt="Arte aleatorio">
-            <p style="margin-top:10px; font-size:0.9rem; color:#8b7a6a;">Escribe una palabra que asocies con esta imagen (opcional).</p>
-            <input type="text" id="artWord" placeholder="Ej: melancolía, caos, quietud..." style="width:70%; display:inline-block;">
-        </div>
-        <button class="btn btn-primary" id="btnEndPause" disabled onclick="endPause()">La arena se ha vaciado. Avanzar ➤</button>
-    </div>
-
-    <!-- ============ SALA 4: EL FUELLE DEL HERRERO ============ -->
-    <div id="room4" class="room">
-        <h2>✍️ El Fuelle del Herrero</h2>
-        <p style="color:#d4b896;"><i>Ahora escribe sin mirar las respuestas de la IA. Usa tus propias palabras.</i></p>
-        <label for="reflectionInput">Tu reflexión final (mín. 20 palabras):</label>
-        <textarea id="reflectionInput" rows="6" placeholder="Escribe aquí tu pensamiento decantado..." onpaste="return false;"></textarea>
-        <button class="btn btn-primary" id="btnReflect" onclick="submitReflection()">Guardar Reflexión y Ver Espejo ➤</button>
-    </div>
-
-    <!-- ============ SALA 5: EL ESPEJO ============ -->
-    <div id="room5" class="room">
-        <h2>🪞 El Espejo (Contraste)</h2>
-        <div id="resultContainer">
-            <p style="color:#8b7a6a;">Cargando tu evaluación...</p>
-        </div>
-        <div id="metacognitionBox" style="margin-top:20px;">
-            <label>1. ¿Qué prompt te costó más formular y por qué?</label>
-            <textarea id="meta1" rows="2" placeholder="..." style="margin-bottom:15px;"></textarea>
-            <label>2. ¿Qué idea tuya no apareció en la IA y de dónde crees que la sacaste?</label>
-            <textarea id="meta2" rows="2" placeholder="..." style="margin-bottom:15px;"></textarea>
-            <label>3. Si pudieras hacer una cuarta pregunta ahora a la IA, ¿cuál sería?</label>
-            <textarea id="meta3" rows="2" placeholder="..." style="margin-bottom:15px;"></textarea>
-            <button class="btn btn-primary" onclick="finalizarActividad()">Entregar y Finalizar</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    // ==================== ESTADO GLOBAL ====================
-    let currentStep = 1;
-    const QUESTIONS = [
+QUESTIONS = {
+    'es': [
         "¿Es el tiempo una ilusión de la conciencia o una propiedad real del universo?",
         "¿El libre albedrío existe realmente o es una ilusión determinada por leyes físicas?",
         "¿Puede una máquina llegar a tener conciencia o es la subjetividad un privilegio biológico?",
         "Si el bien y el mal son constructos humanos, ¿existe una moral objetiva?",
         "¿Es el lenguaje una herramienta para describir la realidad, o la realidad está construida por el lenguaje?"
-    ];
-    let selectedQuestionIdx = 0;
-    let promptCount = 0;
-    let timerInterval = null;
-    let pauseEnded = false;
+    ],
+    'en': [
+        "Is time an illusion of consciousness or a real property of the universe?",
+        "Does free will truly exist, or is it an illusion determined by physical laws?",
+        "Can a machine ever achieve consciousness, or is subjectivity a biological privilege?",
+        "If good and evil are human constructs, is there an objective morality?",
+        "Is language a tool to describe reality, or is reality constructed by language?"
+    ],
+    'de': [
+        "Ist die Zeit eine Illusion des Bewusstseins oder eine reale Eigenschaft des Universums?",
+        "Existiert der freie Wille wirklich oder ist er eine durch physikalische Gesetze determinada Illusion?",
+        "Kann eine Maschine jemals ein Bewusstsein erlangen oder ist Subjektivität ein biologisches Privileg?",
+        "Wenn Gut und Böse menschliche Konstrukte sind, gibt es dann eine objektive Moral?",
+        "Ist die Sprache ein Werkzeug zur Beschreibung der Realität oder wird die Realität durch Sprache konstruiert?"
+    ]
+}
 
-    // Bloqueo de salida (Regla complementaria)
-    window.addEventListener('beforeunload', (event) => {
-        if (currentStep >= 2 && currentStep <= 4) {
-            event.preventDefault();
-            event.returnValue = 'Aún no has terminado tu reflexión en la Bóveda. ¿Seguro que quieres salir?';
-        }
-    });
+SYSTEM_INSTRUCTIONS_GEN = {
+    'es': """
+    Eres un filósofo educador especializado en formular dilemas éticos y preguntas filosóficas profundas.
+    - Genera UNA SOLA pregunta o dilema ético/filosófico provocador en español.
+    - Debe ser clara, intrigante y apta para debate escolar/universitario.
+    - No agregues introducciones, numeración ni saludos. Entrega únicamente el texto de la pregunta.
+    - Longitud máxima: 20 a 35 palabras.
+    """,
+    'en': """
+    You are a philosophical educator specializing in formulating ethical dilemmas and deep philosophical questions.
+    - Generate ONE single provocative ethical or philosophical question or dilemma in English.
+    - It must be clear, intriguing, and suitable for academic debate.
+    - Do not add intros, numbering, or greetings. Return ONLY the text of the question.
+    - Maximum length: 20 to 35 words.
+    """,
+    'de': """
+    Du bist ein Philosophielehrer, der darauf spezialisiert ist, ethische Dilemmata und tiefe philosophische Fragen zu formulieren.
+    - Erstelle EINE einzelne provokante ethische oder philosophische Frage / ein Dilemma auf Deutsch.
+    - Sie muss klar, faszinierend und für akademische Debatten geeignet sein.
+    - Füge keine Einleitungen, Nummerierungen oder Begrüßungen hinzu. Gib NUR den Text der Frage zurück.
+    - Maximale Länge: 20 bis 35 Wörter.
+    """
+}
 
-    // ==================== NAVEGACIÓN ====================
-    function showRoom(roomId) {
-        document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
-        document.getElementById(roomId).classList.add('active');
-        document.getElementById('stepIndicator').innerText = `Sala ${currentStep} / 5`;
+SYSTEM_INSTRUCTIONS_ORACLE = {
+    'es': """
+    Eres el "Oráculo de la Duda", un asistente filosófico.
+    - Responde en ESPAÑOL con claridad, profundidad y provocación.
+    - Nunca des respuestas definitivas; siempre deja espacio para la duda.
+    - Menciona corrientes filosóficas si es posible.
+    - Tus respuestas deben tener entre 80 y 120 palabras.
+    - NUNCA dejes oraciones a la mitad: asegúrate de terminar siempre tus frases y finalizar con una pregunta o reflexión filosófica completa.
+    """,
+    'en': """
+    You are the "Oracle of Doubt", a philosophical assistant.
+    - Respond in ENGLISH with clarity, depth, and provocation.
+    - Never give definitive answers; always leave room for doubt.
+    - Mention philosophical movements if possible.
+    - Your responses must be between 80 and 120 words.
+    - NEVER leave sentences unfinished: make sure to always complete your sentences and end with a complete philosophical question or reflection.
+    """,
+    'de': """
+    Du bist das "Orakel des Zweifels", ein philosophischer Assistent.
+    - Antworte auf DEUTSCH mit Klarheit, Tiefe und Provokation.
+    - Gib niemals endgültige Antworten; lasse immer Raum für Zweifel.
+    - Erwähne nach Möglichkeit philosophische Strömungen.
+    - Deine Antworten müssen zwischen 80 und 120 Wörter lang sein.
+    - Lasse Sätze NIEMALS unvollendet: Stelle sicher, dass du deine Sätze immer beendest und mit einer vollständigen philosophischen Frage oder Überlegung abschließt.
+    """
+}
+
+INSIGNIAS_LANG = {
+    'es': {
+        'espejo_roto': "🏆 'El Espejo Roto': Aportaste muchas ideas propias",
+        'prometeo': "🧠 'Prometeo': Completaste las 3 preguntas",
+        'estoico': "⚔️ 'Estoico': Tu reflexión es muy independiente de la IA.",
+        'alerta': "⚠️ Alerta: Tu texto es muy similar al de la IA."
+    },
+    'en': {
+        'espejo_roto': "🏆 'The Broken Mirror': You contributed many original ideas",
+        'prometeo': "🧠 'Prometheus': You completed all 3 questions",
+        'estoico': "⚔️ 'Stoic': Your reflection is highly independent of the AI.",
+        'alerta': "⚠️ Warning: Your text is very similar to the AI's response."
+    },
+    'de': {
+        'espejo_roto': "🏆 'Der zerbrochene Spiegel': Du hast viele eigene Ideen eingebracht",
+        'prometeo': "🧠 'Prometheus': Du hast alle 3 Fragen beantwortet",
+        'estoico': "⚔️ 'Stoiker': Deine Reflexion ist sehr unabhängig von der KI.",
+        'alerta': "⚠️ Warnung: Dein Text ähnelt dem der KI sehr stark."
     }
+}
 
-    // ==================== SALA 1 ====================
-    window.onload = function() {
-        const select = document.getElementById('presetQuestionSelect');
-        if (select) {
-            QUESTIONS.forEach((q, idx) => {
-                const opt = document.createElement('option');
-                opt.value = q;
-                opt.innerText = `${idx + 1}. ${q.substring(0, 55)}...`;
-                select.appendChild(opt);
-            });
-        }
-        document.getElementById('questionInput').value = QUESTIONS[0];
-        document.getElementById('artImage').src = `https://picsum.photos/400/200?random=${Math.random()}`;
-    }
+def obtener_embedding(texto):
+    if not client or not texto:
+        return None
+    try:
+        response = client.models.embed_content(
+            model="text-embedding-004",
+            contents=texto[:8000]
+        )
+        if hasattr(response, 'embedding') and hasattr(response.embedding, 'values'):
+            return response.embedding.values
+        elif hasattr(response, 'embeddings') and len(response.embeddings) > 0:
+            return response.embeddings[0].values
+        return None
+    except Exception as e:
+        print(f"Error al obtener embedding con Gemini: {e}")
+        return None
 
-    function generateAiQuestion() {
-        const btn = document.getElementById('btnGenerateAi');
-        const input = document.getElementById('questionInput');
-        btn.disabled = true;
-        btn.innerText = '✨ Generando con Gemini...';
+def distancia_coseno(emb1, emb2):
+    if emb1 is None or emb2 is None:
+        return 0.0
+    vec1 = np.array(emb1)
+    vec2 = np.array(emb2)
+    norm1 = np.linalg.norm(vec1)
+    norm2 = np.linalg.norm(vec2)
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+    return float(np.dot(vec1, vec2) / (norm1 * norm2))
 
-        fetch('/api/generar_pregunta', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            btn.disabled = false;
-            btn.innerText = '🎲 Generar dilema con IA';
-            if (data.pregunta) {
-                input.value = data.pregunta;
-            } else if (data.error) {
-                alert(data.error);
-            }
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerText = '🎲 Generar dilema con IA';
-            alert('Error al conectar con la IA para generar la pregunta.');
-        });
-    }
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    function selectPresetQuestion(val) {
-        if (val) {
-            document.getElementById('questionInput').value = val;
-        }
-    }
+@app.route('/api/generar_pregunta', methods=['POST', 'GET'])
+def generar_pregunta():
+    if not client:
+        return jsonify({'error': 'La clave GEMINI_API_KEY no está configurada.'}), 500
+    try:
+        data = request.json or {}
+        idioma = data.get('idioma', session.get('idioma', 'es'))
+        if idioma not in SYSTEM_INSTRUCTIONS_GEN:
+            idioma = 'es'
 
-    function startActivity() {
-        const questionText = document.getElementById('questionInput').value.trim();
-        const opinion = document.getElementById('opinionInput').value.trim();
+        from google.genai import types
+        sistema_preguntas = SYSTEM_INSTRUCTIONS_GEN[idioma]
+        
+        prompt_content = {
+            'es': "Genera un dilema o pregunta filosófica/ética profunda e inspiradora.",
+            'en': "Generate an inspiring and deep philosophical/ethical dilemma or question.",
+            'de': "Erstelle ein inspirierendes und tiefgründiges philosophisches/ethisches Dilemma oder eine Frage."
+        }.get(idioma, "Genera un dilema o pregunta filosófica/ética profunda e inspiradora.")
 
-        if (questionText.length < 5) {
-            alert('La pregunta de reflexión debe tener al menos 5 caracteres.');
-            return;
-        }
-        if (opinion.length < 1) {
-            alert('Por favor, escribe al menos una palabra de opinión inicial.');
-            return;
-        }
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt_content,
+            config=types.GenerateContentConfig(
+                system_instruction=sistema_preguntas,
+                temperature=0.95,
+                max_output_tokens=150
+            )
+        )
+        pregunta_generada = response.text.strip()
+        return jsonify({'status': 'ok', 'pregunta': pregunta_generada})
+    except Exception as e:
+        return jsonify({'error': f'Error al generar pregunta con Gemini: {str(e)}'}), 500
 
-        fetch('/api/iniciar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pregunta: questionText, opinion_inicial: opinion })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'ok') {
-                currentStep = 2;
-                showRoom('room2');
-                promptCount = 0;
-                document.getElementById('remainingPrompts').innerText = 3;
-                document.getElementById('chatHistory').innerHTML = `<p style="color:#8b7a6a;"><i>El Oráculo espera tu primera pregunta sobre la premisa: "${data.pregunta}"...</i></p>`;
-                document.getElementById('btnToPause').style.display = 'none';
-                document.getElementById('btnAsk').disabled = false;
-            }
-        });
-    }
+@app.route('/api/iniciar', methods=['POST'])
+def iniciar():
+    data = request.json or {}
+    idioma = data.get('idioma', 'es')
+    if idioma not in QUESTIONS:
+        idioma = 'es'
 
-    // ==================== SALA 2 ====================
-    function askOracle() {
-        const promptText = document.getElementById('promptInput').value.trim();
-        if (promptText.length < 10) {
-            alert('Tu pregunta debe tener al menos 10 caracteres. Profundiza un poco más.');
-            return;
-        }
+    pregunta_custom = data.get('pregunta', '').strip()
+    pregunta_idx = data.get('pregunta_idx', 0)
+    
+    cat_preguntas = QUESTIONS.get(idioma, QUESTIONS['es'])
 
-        if (promptCount >= 3) {
-            alert('Ya realizaste tus 3 preguntas.');
-            return;
-        }
+    if pregunta_custom:
+        pregunta_final = pregunta_custom
+    else:
+        pregunta_final = cat_preguntas[pregunta_idx % len(cat_preguntas)]
 
-        document.getElementById('btnAsk').disabled = true;
-        document.getElementById('btnAsk').innerText = 'Consultando...';
+    session.clear()
+    session['idioma'] = idioma
+    session['pregunta'] = pregunta_final
+    session['opinion_inicial'] = data.get('opinion_inicial', '')
+    session['prompts'] = []
+    session['respuestas_ia'] = []
+    session['tiempo_inicio_pausa'] = None
+    session['reflexion_final'] = ''
+    session['finalizado'] = False
+    return jsonify({'status': 'ok', 'pregunta': session['pregunta'], 'idioma': idioma})
 
-        fetch('/api/preguntar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: promptText })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                document.getElementById('btnAsk').disabled = false;
-                document.getElementById('btnAsk').innerText = 'Consultar Oráculo';
-                return;
-            }
+@app.route('/api/preguntar', methods=['POST'])
+def preguntar():
+    data = request.json or {}
+    prompt_usuario = data.get('prompt', '').strip()
+    if not prompt_usuario:
+        return jsonify({'error': 'El prompt no puede estar vacío'}), 400
+    if len(prompt_usuario) < 10:
+        return jsonify({'error': 'Mínimo 10 caracteres.'}), 400
+    if len(session.get('prompts', [])) >= MAX_PROMPTS:
+        return jsonify({'error': 'Ya realizaste tus 3 preguntas.'}), 400
 
-            const chat = document.getElementById('chatHistory');
-            const humanMsg = `<p style="color:#d4ac0d; margin-top:10px;"><strong>Tú:</strong> ${promptText}</p>`;
-            const iaMsg = `<p style="color:#aed6f1;"><strong>Oráculo:</strong> ${data.respuesta}</p>`;
-            chat.innerHTML += humanMsg + iaMsg;
-            chat.scrollTop = chat.scrollHeight;
+    if not client:
+        return jsonify({'error': 'La clave GEMINI_API_KEY no está configurada en el servidor.'}), 500
 
-            promptCount = data.prompt_numero;
-            document.getElementById('remainingPrompts').innerText = 3 - promptCount;
+    idioma = session.get('idioma', 'es')
+    sistema = SYSTEM_INSTRUCTIONS_ORACLE.get(idioma, SYSTEM_INSTRUCTIONS_ORACLE['es'])
 
-            document.getElementById('promptInput').value = '';
-            document.getElementById('btnAsk').disabled = false;
-            document.getElementById('btnAsk').innerText = 'Consultar Oráculo';
+    try:
+        from google.genai import types
+        user_context_str = f"Premise/Question: '{session.get('pregunta', '')}'. Initial Opinion: '{session.get('opinion_inicial', '')}'. User Specific Question: {prompt_usuario}"
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=user_context_str,
+            config=types.GenerateContentConfig(
+                system_instruction=sistema,
+                temperature=0.85,
+                max_output_tokens=2000
+            )
+        )
+        texto_respuesta = response.text.strip()
+    except Exception as e:
+        return jsonify({'error': f'Error al consultar Gemini: {str(e)}'}), 500
 
-            if (promptCount >= 3) {
-                document.getElementById('btnAsk').disabled = true;
-                document.getElementById('btnToPause').style.display = 'inline-block';
-            }
-        })
-        .catch(err => {
-            alert('Error al conectar con el servidor.');
-            document.getElementById('btnAsk').disabled = false;
-            document.getElementById('btnAsk').innerText = 'Consultar Oráculo';
-        });
-    }
+    session['prompts'].append(prompt_usuario)
+    session['respuestas_ia'].append(texto_respuesta)
+    session.modified = True
 
-    // ==================== SALA 3 ====================
-    function goToPause() {
-        currentStep = 3;
-        showRoom('room3');
-        pauseEnded = false;
-        document.getElementById('btnEndPause').disabled = true;
+    profundidad = 0
+    if len(session['prompts']) >= 2:
+        emb1 = obtener_embedding(session['prompts'][-2])
+        emb2 = obtener_embedding(session['prompts'][-1])
+        if emb1 and emb2:
+            sim = distancia_coseno(emb1, emb2)
+            profundidad = max(0, 1 - sim) * 100
 
-        fetch('/api/iniciar_pausa', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            startTimer(data.duracion);
-        });
-    }
+    return jsonify({
+        'status': 'ok',
+        'respuesta': texto_respuesta,
+        'prompt_numero': len(session['prompts']),
+        'profundidad': round(profundidad, 2),
+        'max_prompts': MAX_PROMPTS
+    })
 
-    function startTimer(duration) {
-        let timeLeft = duration;
-        const display = document.getElementById('timerDisplay');
-        timerInterval = setInterval(() => {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            display.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            timeLeft--;
+@app.route('/api/iniciar_pausa', methods=['POST'])
+def iniciar_pausa():
+    session['tiempo_inicio_pausa'] = time.time()
+    session.modified = True
+    return jsonify({'status': 'ok', 'duracion': PAUSE_SECONDS})
 
-            if (timeLeft < 0) {
-                clearInterval(timerInterval);
-                display.innerText = '00:00';
-                document.getElementById('btnEndPause').disabled = false;
-                pauseEnded = true;
-            }
-        }, 1000);
-    }
+@app.route('/api/verificar_pausa', methods=['GET'])
+def verificar_pausa():
+    inicio = session.get('tiempo_inicio_pausa')
+    if inicio is None:
+        return jsonify({'restante': 0, 'terminado': True})
+    transcurrido = time.time() - inicio
+    restante = max(0, PAUSE_SECONDS - transcurrido)
+    return jsonify({'restante': int(restante), 'terminado': restante <= 0, 'total': PAUSE_SECONDS})
 
-    function endPause() {
-        if (!pauseEnded) {
-            alert('Debes esperar a que la arena termine de caer.');
-            return;
-        }
-        clearInterval(timerInterval);
-        currentStep = 4;
-        showRoom('room4');
-    }
+@app.route('/api/guardar_reflexion', methods=['POST'])
+def guardar_reflexion():
+    data = request.json or {}
+    texto = data.get('texto', '').strip()
+    if len(texto) < 20:
+        return jsonify({'error': 'Mínimo 20 palabras.'}), 400
+    session['reflexion_final'] = texto
+    session.modified = True
+    return jsonify({'status': 'ok'})
 
-    // ==================== SALA 4 ====================
-    function submitReflection() {
-        const texto = document.getElementById('reflectionInput').value.trim();
-        if (texto.length < 20) {
-            alert('Escribe una reflexión más desarrollada (mínimo 20 palabras).');
-            return;
-        }
+@app.route('/api/evaluar_contraste', methods=['GET'])
+def evaluar_contraste():
+    idioma = session.get('idioma', 'es')
+    pregunta = session.get('pregunta', '')
+    opinion_inicial = session.get('opinion_inicial', '')
+    prompts = session.get('prompts', [])
+    respuestas_ia = session.get('respuestas_ia', [])
+    reflexion_humana = session.get('reflexion_final', '')
 
-        fetch('/api/guardar_reflexion', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ texto: texto })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-            currentStep = 5;
-            showRoom('room5');
-            loadContraste();
-        });
-    }
+    texto_ia_completo = " ".join(respuestas_ia)
 
-    // ==================== SALA 5 ====================
-    function loadContraste() {
-        fetch('/api/evaluar_contraste')
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById('resultContainer');
-            let html = `
-                <div class="split-panel">
-                    <div class="panel-ia">
-                        <h3 style="color:#2e86c1;">🤖 Oráculo (IA)</h3>
-                        <p style="font-size:0.9rem; color:#aed6f1;"><i>${data.texto_ia_completo.substring(0, 500)}...</i></p>
-                        <hr style="border-color:#2e86c1;">
-                        <p><strong>Riesgo de dependencia:</strong> ${data.riesgo_dependencia}%</p>
-                    </div>
-                    <div class="panel-humano">
-                        <h3 style="color:#d4ac0d;">🧑‍🎓 Humano (Tú)</h3>
-                        <p style="font-size:0.9rem;">${data.reflexion_humana}</p>
-                        <hr style="border-color:#d4ac0d;">
-                        <p><strong>Palabras propias (amarillo):</strong> ${data.solo_humano.join(', ') || 'Ninguna detectada'}</p>
-                    </div>
-                </div>
-                <div style="margin-top:15px; background:#1f1b18; padding:10px; border-radius:8px;">
-                    <p><strong>🟢 Coincidencias (verde):</strong> ${data.coincidencias.join(', ') || 'Pocas coincidencias literales'}</p>
-                    <p><strong>🔴 Solo IA (rojo):</strong> ${data.solo_ia.join(', ') || 'Ninguna'}</p>
-                </div>
-                <div class="insignia-box">
-                    <strong>🏅 Insignias obtenidas:</strong>
-                    ${data.insignias.map(i => `<span>${i}</span>`).join('')}
-                </div>
-            `;
-            container.innerHTML = html;
-            window._metaData = data;
-        });
-    }
+    emb_ia = obtener_embedding(texto_ia_completo)
+    emb_humano = obtener_embedding(reflexion_humana)
+    riesgo_dependencia = distancia_coseno(emb_ia, emb_humano) if emb_ia and emb_humano else 0.0
 
-    function finalizarActividad() {
-        const meta1 = document.getElementById('meta1').value.trim();
-        const meta2 = document.getElementById('meta2').value.trim();
-        const meta3 = document.getElementById('meta3').value.trim();
+    palabras_ia = set(texto_ia_completo.lower().split())
+    palabras_humano = set(reflexion_humana.lower().split())
+    coincidencias = palabras_ia.intersection(palabras_humano)
+    solo_ia = palabras_ia - palabras_humano
+    solo_humano = palabras_humano - palabras_ia
 
-        if (!meta1 || !meta2 || !meta3) {
-            alert('Por favor, responde las 3 preguntas metacognitivas para completar la actividad.');
-            return;
-        }
+    ins_dict = INSIGNIAS_LANG.get(idioma, INSIGNIAS_LANG['es'])
+    insignias = []
+    if len(solo_humano) > 10:
+        insignias.append(ins_dict['espejo_roto'])
+    if len(session.get('prompts', [])) == MAX_PROMPTS:
+        insignias.append(ins_dict['prometeo'])
+    if riesgo_dependencia < 0.4:
+        insignias.append(ins_dict['estoico'])
+    elif riesgo_dependencia > 0.8:
+        insignias.append(ins_dict['alerta'])
 
-        fetch('/api/finalizar', { method: 'POST' })
-        .then(res => res.json())
-        .then(data => {
-            alert('✅ ¡Actividad completada! Has atravesado todas las salas de la Bóveda de la Duda.');
-            window.removeEventListener('beforeunload', () => {});
-            
-            const nombreInput = document.getElementById('studentNameInput');
-            const nombreEstudiante = nombreInput && nombreInput.value.trim() ? nombreInput.value.trim() : 'Estudiante Anónimo';
-            const metaData = window._metaData || {};
-            
-            let reportText = `====================================================\n`;
-            reportText += `BITÁCORA DE REFLEXIÓN ÉTICA - BÓVEDA DE LA DUDA\n`;
-            reportText += `Estudiante: ${nombreEstudiante}\n`;
-            reportText += `Fecha: ${new Date().toLocaleDateString()} - ${new Date().toLocaleTimeString()}\n`;
-            reportText += `====================================================\n\n`;
-            reportText += `1. PREGUNTA / DILEMA ÉTICO:\n${metaData.pregunta || ''}\n\n`;
-            reportText += `2. OPINIÓN INICIAL DEL ESTUDIANTE:\n${metaData.opinion_inicial || ''}\n\n`;
-            reportText += `3. INTERROGATORIO AL ORÁCULO (IA):\n`;
-            if (metaData.prompts && metaData.respuestas_ia) {
-                metaData.prompts.forEach((p, idx) => {
-                    reportText += `   [Pregunta ${idx+1}]: ${p}\n`;
-                    reportText += `   [Respuesta Oráculo]: ${metaData.respuestas_ia[idx] || ''}\n\n`;
-                });
-            }
-            reportText += `4. REFLEXIÓN FINAL PROPIA (FUELLE DEL HERRERO):\n${metaData.reflexion_humana || ''}\n\n`;
-            reportText += `5. ANÁLISIS DE AUTONOMÍA (EL ESPEJO):\n`;
-            reportText += `   - Riesgo de dependencia IA: ${metaData.riesgo_dependencia}%\n`;
-            reportText += `   - Insignias obtenidas: ${(metaData.insignias || []).join(', ')}\n\n`;
-            reportText += `6. AUTOEVALUACIÓN METACOGNITIVA:\n`;
-            reportText += `   a) Prompt más complejo: ${meta1}\n`;
-            reportText += `   b) Ideas propias independientes: ${meta2}\n`;
-            reportText += `   c) Pregunta futura propuesta: ${meta3}\n`;
-            reportText += `====================================================\n`;
+    return jsonify({
+        'idioma': idioma,
+        'pregunta': pregunta,
+        'opinion_inicial': opinion_inicial,
+        'prompts': prompts,
+        'respuestas_ia': respuestas_ia,
+        'texto_ia_completo': texto_ia_completo,
+        'reflexion_humana': reflexion_humana,
+        'riesgo_dependencia': round(riesgo_dependencia * 100, 2),
+        'coincidencias': list(coincidencias)[:20],
+        'solo_ia': list(solo_ia)[:20],
+        'solo_humano': list(solo_humano)[:20],
+        'insignias': insignias
+    })
 
-            window._bitacoraTextoFinal = reportText;
+@app.route('/api/finalizar', methods=['POST'])
+def finalizar():
+    session['finalizado'] = True
+    session.modified = True
+    return jsonify({'status': 'ok'})
 
-            document.getElementById('metacognitionBox').innerHTML = `
-                <div style="background:#2f2924; padding:25px; border-radius:12px; text-align:center;">
-                    <h2 style="color:#d4b896; margin-bottom:10px;">🎉 ¡Viaje completado exitosamente!</h2>
-                    <p style="color:#e0d6c8; margin-bottom:15px;">Tu bitácora completa está lista. Elige cómo deseas entregarla a tu profesor:</p>
-                    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-bottom:20px;">
-                        <button class="btn btn-primary" onclick="copiarBitacora()">📋 Copiar Bitácora para Entregar</button>
-                        <button class="btn" onclick="descargarBitacora()">📥 Descargar Bitácora (.txt)</button>
-                    </div>
-                    <label style="text-align:left; font-size:0.9rem;">Vista previa de tu Bitácora:</label>
-                    <textarea id="bitacoraFinalText" rows="10" readonly style="font-family:monospace; font-size:0.85rem; background:#191614; color:#d4b896;">${reportText}</textarea>
-                </div>
-            `;
-        });
-    }
-
-    function copiarBitacora() {
-        const texto = window._bitacoraTextoFinal || document.getElementById('bitacoraFinalText').value;
-        navigator.clipboard.writeText(texto).then(() => {
-            alert('📋 ¡Bitácora copiada al portapapeles! Ya puedes pegarla en Google Classroom, Word o enviarla a tu profesor.');
-        }).catch(err => {
-            alert('No se pudo copiar automáticamente. Puedes seleccionar el texto del recuadro manualmente y copiarlo.');
-        });
-    }
-
-    function descargarBitacora() {
-        const texto = window._bitacoraTextoFinal || document.getElementById('bitacoraFinalText').value;
-        const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'Bitacora_Reflexion_Etica.txt';
-        link.click();
-    }
-</script>
-</body>
-</html>
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
 
