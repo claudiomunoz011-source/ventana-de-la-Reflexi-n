@@ -25,13 +25,101 @@ if GEMINI_API_KEY:
 PAUSE_SECONDS = 60
 MAX_PROMPTS = 3
 
-QUESTIONS = [
-    "¿Es el tiempo una ilusión de la conciencia o una propiedad real del universo?",
-    "¿El libre albedrío existe realmente o es una ilusión determinada por leyes físicas?",
-    "¿Puede una máquina llegar a tener conciencia o es la subjetividad un privilegio biológico?",
-    "Si el bien y el mal son constructos humanos, ¿existe una moral objetiva?",
-    "¿Es el lenguaje una herramienta para describir la realidad, o la realidad está construida por el lenguaje?"
-]
+QUESTIONS = {
+    'es': [
+        "¿Es el tiempo una ilusión de la conciencia o una propiedad real del universo?",
+        "¿El libre albedrío existe realmente o es una ilusión determinada por leyes físicas?",
+        "¿Puede una máquina llegar a tener conciencia o es la subjetividad un privilegio biológico?",
+        "Si el bien y el mal son constructos humanos, ¿existe una moral objetiva?",
+        "¿Es el lenguaje una herramienta para describir la realidad, o la realidad está construida por el lenguaje?"
+    ],
+    'en': [
+        "Is time an illusion of consciousness or a real property of the universe?",
+        "Does free will truly exist, or is it an illusion determined by physical laws?",
+        "Can a machine ever achieve consciousness, or is subjectivity a biological privilege?",
+        "If good and evil are human constructs, is there an objective morality?",
+        "Is language a tool to describe reality, or is reality constructed by language?"
+    ],
+    'de': [
+        "Ist die Zeit eine Illusion des Bewusstseins oder eine reale Eigenschaft des Universums?",
+        "Existiert der freie Wille wirklich oder ist er eine durch physikalische Gesetze determinada Illusion?",
+        "Kann eine Maschine jemals ein Bewusstsein erlangen oder ist Subjektivität ein biologisches Privileg?",
+        "Wenn Gut und Böse menschliche Konstrukte sind, gibt es dann eine objektive Moral?",
+        "Ist die Sprache ein Werkzeug zur Beschreibung der Realität oder wird die Realität durch Sprache konstruiert?"
+    ]
+}
+
+SYSTEM_INSTRUCTIONS_GEN = {
+    'es': """
+    Eres un filósofo educador especializado en formular dilemas éticos y preguntas filosóficas profundas.
+    - Genera UNA SOLA pregunta o dilema ético/filosófico provocador en español.
+    - Debe ser clara, intrigante y apta para debate escolar/universitario.
+    - No agregues introducciones, numeración ni saludos. Entrega únicamente el texto de la pregunta.
+    - Longitud máxima: 20 a 35 palabras.
+    """,
+    'en': """
+    You are a philosophical educator specializing in formulating ethical dilemmas and deep philosophical questions.
+    - Generate ONE single provocative ethical or philosophical question or dilemma in English.
+    - It must be clear, intriguing, and suitable for academic debate.
+    - Do not add intros, numbering, or greetings. Return ONLY the text of the question.
+    - Maximum length: 20 to 35 words.
+    """,
+    'de': """
+    Du bist ein Philosophielehrer, der darauf spezialisiert ist, ethische Dilemmata und tiefe philosophische Fragen zu formulieren.
+    - Erstelle EINE einzelne provokante ethische oder philosophische Frage / ein Dilemma auf Deutsch.
+    - Sie muss klar, faszinierend und für akademische Debatten geeignet sein.
+    - Füge keine Einleitungen, Nummerierungen oder Begrüßungen hinzu. Gib NUR den Text der Frage zurück.
+    - Maximale Länge: 20 bis 35 Wörter.
+    """
+}
+
+SYSTEM_INSTRUCTIONS_ORACLE = {
+    'es': """
+    Eres el "Oráculo de la Duda", un asistente filosófico.
+    - Responde en ESPAÑOL con claridad, profundidad y provocación.
+    - Nunca des respuestas definitivas; siempre deja espacio para la duda.
+    - Menciona corrientes filosóficas si es posible.
+    - Tus respuestas deben tener entre 80 y 120 palabras.
+    - NUNCA dejes oraciones a la mitad: asegúrate de terminar siempre tus frases y finalizar con una pregunta o reflexión filosófica completa.
+    """,
+    'en': """
+    You are the "Oracle of Doubt", a philosophical assistant.
+    - Respond in ENGLISH with clarity, depth, and provocation.
+    - Never give definitive answers; always leave room for doubt.
+    - Mention philosophical movements if possible.
+    - Your responses must be between 80 and 120 words.
+    - NEVER leave sentences unfinished: make sure to always complete your sentences and end with a complete philosophical question or reflection.
+    """,
+    'de': """
+    Du bist das "Orakel des Zweifels", ein philosophischer Assistent.
+    - Antworte auf DEUTSCH mit Klarheit, Tiefe und Provokation.
+    - Gib niemals endgültige Antworten; lasse immer Raum für Zweifel.
+    - Erwähne nach Möglichkeit philosophische Strömungen.
+    - Deine Antworten müssen zwischen 80 und 120 Wörter lang sein.
+    - Lasse Sätze NIEMALS unvollendet: Stelle sicher, dass du deine Sätze immer beendest und mit einer vollständigen philosophischen Frage oder Überlegung abschließt.
+    """
+}
+
+INSIGNIAS_LANG = {
+    'es': {
+        'espejo_roto': "🏆 'El Espejo Roto': Aportaste muchas ideas propias",
+        'prometeo': "🧠 'Prometeo': Completaste las 3 preguntas",
+        'estoico': "⚔️ 'Estoico': Tu reflexión es muy independiente de la IA.",
+        'alerta': "⚠️ Alerta: Tu texto es muy similar al de la IA."
+    },
+    'en': {
+        'espejo_roto': "🏆 'The Broken Mirror': You contributed many original ideas",
+        'prometeo': "🧠 'Prometheus': You completed all 3 questions",
+        'estoico': "⚔️ 'Stoic': Your reflection is highly independent of the AI.",
+        'alerta': "⚠️ Warning: Your text is very similar to the AI's response."
+    },
+    'de': {
+        'espejo_roto': "🏆 'Der zerbrochene Spiegel': Du hast viele eigene Ideen eingebracht",
+        'prometeo': "🧠 'Prometheus': Du hast alle 3 Fragen beantwortet",
+        'estoico': "⚔️ 'Stoiker': Deine Reflexion ist sehr unabhängig von der KI.",
+        'alerta': "⚠️ Warnung: Dein Text ähnelt dem der KI sehr stark."
+    }
+}
 
 def obtener_embedding(texto):
     if not client or not texto:
@@ -70,17 +158,23 @@ def generar_pregunta():
     if not client:
         return jsonify({'error': 'La clave GEMINI_API_KEY no está configurada.'}), 500
     try:
+        data = request.json or {}
+        idioma = data.get('idioma', session.get('idioma', 'es'))
+        if idioma not in SYSTEM_INSTRUCTIONS_GEN:
+            idioma = 'es'
+
         from google.genai import types
-        sistema_preguntas = """
-        Eres un filósofo educador especializado en formular dilemas éticos y preguntas filosóficas profundas.
-        - Genera UNA SOLA pregunta o dilema ético/filosófico provocador en español.
-        - Debe ser clara, intrigante y apta para debate escolar/universitario.
-        - No agregues introducciones, numeración ni saludos. Entrega únicamente el texto de la pregunta.
-        - Longitud máxima: 20 a 35 palabras.
-        """
+        sistema_preguntas = SYSTEM_INSTRUCTIONS_GEN[idioma]
+        
+        prompt_content = {
+            'es': "Genera un dilema o pregunta filosófica/ética profunda e inspiradora.",
+            'en': "Generate an inspiring and deep philosophical/ethical dilemma or question.",
+            'de': "Erstelle ein inspirierendes und tiefgründiges philosophisches/ethisches Dilemma oder eine Frage."
+        }.get(idioma, "Genera un dilema o pregunta filosófica/ética profunda e inspiradora.")
+
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents="Genera un dilema o pregunta filosófica/ética profunda e inspiradora.",
+            contents=prompt_content,
             config=types.GenerateContentConfig(
                 system_instruction=sistema_preguntas,
                 temperature=0.95,
@@ -95,15 +189,22 @@ def generar_pregunta():
 @app.route('/api/iniciar', methods=['POST'])
 def iniciar():
     data = request.json or {}
+    idioma = data.get('idioma', 'es')
+    if idioma not in QUESTIONS:
+        idioma = 'es'
+
     pregunta_custom = data.get('pregunta', '').strip()
     pregunta_idx = data.get('pregunta_idx', 0)
     
+    cat_preguntas = QUESTIONS.get(idioma, QUESTIONS['es'])
+
     if pregunta_custom:
         pregunta_final = pregunta_custom
     else:
-        pregunta_final = QUESTIONS[pregunta_idx % len(QUESTIONS)]
+        pregunta_final = cat_preguntas[pregunta_idx % len(cat_preguntas)]
 
     session.clear()
+    session['idioma'] = idioma
     session['pregunta'] = pregunta_final
     session['opinion_inicial'] = data.get('opinion_inicial', '')
     session['prompts'] = []
@@ -111,7 +212,7 @@ def iniciar():
     session['tiempo_inicio_pausa'] = None
     session['reflexion_final'] = ''
     session['finalizado'] = False
-    return jsonify({'status': 'ok', 'pregunta': session['pregunta']})
+    return jsonify({'status': 'ok', 'pregunta': session['pregunta'], 'idioma': idioma})
 
 @app.route('/api/preguntar', methods=['POST'])
 def preguntar():
@@ -127,19 +228,15 @@ def preguntar():
     if not client:
         return jsonify({'error': 'La clave GEMINI_API_KEY no está configurada en el servidor.'}), 500
 
-    sistema = """
-    Eres el "Oráculo de la Duda", un asistente filosófico.
-    - Responde con claridad, profundidad y provocación.
-    - Nunca des respuestas definitivas; siempre deja espacio para la duda.
-    - Menciona corrientes filosóficas si es posible.
-    - Tus respuestas deben tener entre 80 y 120 palabras.
-    - NUNCA dejes oraciones a la mitad: asegúrate de terminar siempre tus frases y finalizar con una pregunta o reflexión filosófica completa.
-    """
+    idioma = session.get('idioma', 'es')
+    sistema = SYSTEM_INSTRUCTIONS_ORACLE.get(idioma, SYSTEM_INSTRUCTIONS_ORACLE['es'])
+
     try:
         from google.genai import types
+        user_context_str = f"Premise/Question: '{session.get('pregunta', '')}'. Initial Opinion: '{session.get('opinion_inicial', '')}'. User Specific Question: {prompt_usuario}"
         response = client.models.generate_content(
             model="gemini-2.5-flash",
-            contents=f"Pregunta del usuario sobre la premisa: '{session.get('pregunta', '')}'. Opinión inicial del usuario: '{session.get('opinion_inicial', '')}'. Pregunta específica actual del usuario: {prompt_usuario}",
+            contents=user_context_str,
             config=types.GenerateContentConfig(
                 system_instruction=sistema,
                 temperature=0.85,
@@ -148,7 +245,7 @@ def preguntar():
         )
         texto_respuesta = response.text.strip()
     except Exception as e:
-        return jsonify({'error': f'Error al consultar Gemini (Google AI Studio): {str(e)}'}), 500
+        return jsonify({'error': f'Error al consultar Gemini: {str(e)}'}), 500
 
     session['prompts'].append(prompt_usuario)
     session['respuestas_ia'].append(texto_respuesta)
@@ -197,6 +294,7 @@ def guardar_reflexion():
 
 @app.route('/api/evaluar_contraste', methods=['GET'])
 def evaluar_contraste():
+    idioma = session.get('idioma', 'es')
     pregunta = session.get('pregunta', '')
     opinion_inicial = session.get('opinion_inicial', '')
     prompts = session.get('prompts', [])
@@ -215,17 +313,19 @@ def evaluar_contraste():
     solo_ia = palabras_ia - palabras_humano
     solo_humano = palabras_humano - palabras_ia
 
+    ins_dict = INSIGNIAS_LANG.get(idioma, INSIGNIAS_LANG['es'])
     insignias = []
     if len(solo_humano) > 10:
-        insignias.append("🏆 'El Espejo Roto': Aportaste muchas ideas propias")
+        insignias.append(ins_dict['espejo_roto'])
     if len(session.get('prompts', [])) == MAX_PROMPTS:
-        insignias.append("🧠 'Prometeo': Completaste las 3 preguntas")
+        insignias.append(ins_dict['prometeo'])
     if riesgo_dependencia < 0.4:
-        insignias.append("⚔️ 'Estoico': Tu reflexión es muy independiente de la IA.")
+        insignias.append(ins_dict['estoico'])
     elif riesgo_dependencia > 0.8:
-        insignias.append("⚠️ Alerta: Tu texto es muy similar al de la IA.")
+        insignias.append(ins_dict['alerta'])
 
     return jsonify({
+        'idioma': idioma,
         'pregunta': pregunta,
         'opinion_inicial': opinion_inicial,
         'prompts': prompts,
@@ -248,4 +348,3 @@ def finalizar():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
